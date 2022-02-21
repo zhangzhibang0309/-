@@ -5,8 +5,16 @@ module.exports = {
       "/api": {
         target: "https://openapi.yiban.cn/oauth/access_token", //线上1
         changeOrigin: true,
-        secure: false,//
-        pathRewrite: (path) => path.replace(/^\/api/,"")
+        pathRewrite: {
+          "^/api": "",
+        },
+      },
+      "/apii": {
+        target: "https://openapi.yiban.cn/user/me", //线上2
+        changeOrigin: true,
+        pathRewrite: {
+          "^/apii": "",
+        },
       },
     },
   },
