@@ -1,16 +1,24 @@
 <template>
   <div>
-    <div>
+    <!-- 页面加载 -->
+    <div :class="{ box: isTrueSpin }" class="load">
+      <n-space>
+        <n-spin :size="70" />
+      </n-space>
+    </div>
+
+    <!-- 成功返回页面 -->
+    <div :class="{ box: isTrue }">
       <!-- 照片 -->
       <div class="img-box">
-        <img src="http://video.qlu.edu.cn/images/photo/202085010011.jpg" alt="" />
+        <img :src="imgSrc" alt="" />
       </div>
 
       <n-table :bordered="false" :single-line="false">
         <thead>
           <tr>
-            <th>属性</th>
-            <th>值</th>
+            <th style="font-weight: 600">防截屏：</th>
+            <th style="font-weight: 600">{{ hour }}:{{ min }}:{{ sed }}</th>
           </tr>
         </thead>
         <tbody>
@@ -38,12 +46,17 @@
             <td>类型：</td>
             <td>{{ backDatas.type }}</td>
           </tr>
-          <tr>
-            <td>时间：</td>
-            <td>27号 -- 13:59:59</td>
-          </tr>
         </tbody>
       </n-table>
+    </div>
+
+    <!-- 失败返回 -->
+    <h1>{{ error }}</h1>
+
+    <div class="record-box" :class="{ box: !isTrueSpin }">
+      <a data-v-4b5f2e30="" href="https://beian.miit.gov.cn/" class="record"
+        >鲁ICP备2021036451号</a
+      >
     </div>
   </div>
 </template>
@@ -52,34 +65,49 @@
 import { ref } from "vue";
 
 import { NTable } from "naive-ui";
+import { NSpin } from "naive-ui";
 
-import { requestPostToken, requestGetMe, requestGetBackCheck } from "../service/index";
+import { requestGetData } from "../service/index";
 
 // 拿到url里面的code
 let url = window.location.href;
 const resUrl = url.split("?code=")[1];
-
+console.log(resUrl);
 // 存放需要展示的学生数据
-let backDatas = ref({
-  id: 201903010116,
-});
+let backDatas = ref({});
+let imgSrc = ref("");
+let error = ref("");
+let isTrue = ref(true);
+let isTrueSpin = ref(false);
 
 // 一堆请求
-let token = requestPostToken(resUrl)
+requestGetData(resUrl)
   .then((res) => {
-    let token = res.data.access_token;
-    // 22222 这里 这个接口不能调用 总是报错请求类型
-    return requestGetMe(token);
-  })
-  .then((res) => {
-    // 11111这里 要在后端改接口
-    let id = res.data.yiban_id;
-    return requestGetBackCheck(201903010118);
-  })
-  .then((res) => {
+    isTrue.value = false;
+    isTrueSpin.value = true;
+
     backDatas.value = res.data.data;
-    console.log(backDatas.value);
+    imgSrc.value = `http://video.qlu.edu.cn/images/photo/${backDatas.value.id}.jpg`;
+  })
+  .catch((err) => {
+    isTrue.value = true;
+    isTrueSpin.value = true;
+
+    error.value = "Error：您未在易班填写返校摸排或者令牌过期（请重新扫码）";
   });
+
+let hour = ref(0);
+let min = ref(0);
+let sed = ref(0);
+setInterval(() => {
+  let date = new Date();
+  sed.value =
+    date.getSeconds() < 10 ? "0" + String(date.getSeconds()) : String(date.getSeconds());
+  hour.value =
+    date.getHours() < 10 ? "0" + String(date.getHours()) : String(date.getHours());
+  min.value =
+    date.getMinutes() < 10 ? "0" + String(date.getMinutes()) : String(date.getMinutes());
+}, 1000);
 </script>
 
 <style scoped>
@@ -106,5 +134,22 @@ let token = requestPostToken(resUrl)
 .n-table {
   font-size: 20px;
   font-weight: 600;
+}
+
+.box {
+  display: none;
+}
+.record {
+  text-decoration: none;
+  display: block;
+  font-weight: 800;
+  color: black;
+  text-align: center;
+}
+
+.load {
+  position: fixed;
+  top: 45vh;
+  left: 43vw;
 }
 </style>
