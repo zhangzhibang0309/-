@@ -93,7 +93,7 @@ requestGetData(resUrl)
     isTrue.value = true;
     isTrueSpin.value = true;
 
-    error.value = "Error：您未在易班填写返校摸排或者令牌过期（请重新扫码）";
+    error.value = "未查到您的当日返校许可，请勿返校，如有问题请与辅导员联系。";
   });
 
 let hour = ref(0);
